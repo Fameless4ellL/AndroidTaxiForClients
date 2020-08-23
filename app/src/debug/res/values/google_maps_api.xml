@@ -1,0 +1,24 @@
+<resources>
+    <!--
+    TODO: Before you run your application, you need a Google Maps API key.
+
+    To get one, follow this link, follow the directions and press "Create" at the end:
+
+    https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=07:A4:DA:A8:8B:26:83:B9:32:BB:C5:D4:F3:FF:C0:46:0D:12:B7:4F%3Bcom.fameless.androiduberriderremake
+
+    You can also add your credentials to an existing key, using these values:
+
+    Package name:
+    com.fameless.androiduberriderremake
+
+    SHA-1 certificate fingerprint:
+    07:A4:DA:A8:8B:26:83:B9:32:BB:C5:D4:F3:FF:C0:46:0D:12:B7:4F
+
+    Alternatively, follow the directions here:
+    https://developers.google.com/maps/documentation/android/start#get-key
+
+    Once you have your key (it starts with "AIza"), replace the "google_maps_key"
+    string in this file.
+    -->
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyDLhkKzMHxWo2HqXaA0r0mMznb3747qojw</string>
+</resources>

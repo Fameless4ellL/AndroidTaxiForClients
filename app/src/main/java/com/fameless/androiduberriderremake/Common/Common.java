@@ -12,16 +12,27 @@ import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
 
+import com.fameless.androiduberriderremake.Model.DriverGeoModel;
 import com.fameless.androiduberriderremake.Model.RiderModel;
 import com.fameless.androiduberriderremake.R;
+import com.google.android.gms.maps.model.Marker;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Common {
     public static final String RIDER_INFO_REFENCE = "Riders";
     public static final String TOKEN_REFERENCE = "Token";
+    public static final String DRIVERS_LOCATION_REFERENCES = "DriversLocation"; // Same as driver app
+    public static final String DRIVERS_INFO_REFERENCE = "DriverInfo";
     public static RiderModel currentRider;
 
     public static final String NOTI_TITLE = "title";
     public static final String NOTI_CONTENT = "body";
+    public static Set<DriverGeoModel> driversFound = new HashSet<DriverGeoModel>();
+    public static HashMap<String, Marker> markerList = new HashMap<>();
 
     public static String buildWelcomeMessage() {
         if (Common.currentRider != null){
@@ -65,5 +76,9 @@ public class Common {
         }
         Notification notification = builder.build();
         notificationManager.notify(id, notification);
+    }
+
+    public static String buildName(String firstname, String lastname) {
+        return firstname + " " + lastname;
     }
 }

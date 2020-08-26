@@ -107,13 +107,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, IFireb
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
     private IGoogleAPI iGoogleAPI;
 
-    // Marker(animation)
-    private List<LatLng> polylineList;
-    private Handler handler;
-    private int index,next;
-    private LatLng start,end;
-    private float v;
-    private double lat,lng;
+
 
 
     @Override
@@ -520,45 +514,58 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, IFireb
                         JSONObject route = jsonArray.getJSONObject(i);
                         JSONObject poly = route.getJSONObject("overview_polyline");
                         String polyline = poly.getString("points");
-                        polylineList = Common.decodePoly(polyline);
+                        //polylineList = Common.decodePoly(polyline);
+                        animationModel.setPolylineList(Common.decodePoly(polyline));
 
 
                     }
 
                     // Moving
-                    handler = new Handler();
-                    index = -1;
-                    next = 1;
+                    //index = -1;
+                    //next = 1;
+                    animationModel.setIndex(-1);
+                    animationModel.setNext(1);
 
                     Runnable runnable = new Runnable() {
                         @Override
                         public void run() {
-                            if (polylineList.size() > 1)
+                            if (animationModel.getPolylineList() !=null && animationModel.getPolylineList().size() > 1)
                             {
-                                if (index < polylineList.size() - 2){
-                                    index++;
-                                    next = index+1;
-                                    start = polylineList.get(index);
-                                    end = polylineList.get(next);
+                                if (animationModel.getIndex() < animationModel.getPolylineList().size() - 2){
+                                    //index++;
+                                    animationModel.setIndex(animationModel.getIndex()+1);
+                                    //next = index+1;
+                                    animationModel.setNext(animationModel.getIndex()+1);
+                                    //start = polylineList.get(index);
+                                    animationModel.setStart(animationModel.getPolylineList().get(animationModel.getIndex()));
+                                    //end = polylineList.get(next);
+                                    animationModel.setEnd(animationModel.getPolylineList().get(animationModel.getNext()));
                                 }
 
                                 ValueAnimator valueAnimator = ValueAnimator.ofInt(0,1);
                                 valueAnimator.setDuration(3000);
                                 valueAnimator.setInterpolator(new LinearInterpolator());
                                 valueAnimator.addUpdateListener(value -> {
-                                    v = value.getAnimatedFraction();
-                                    lat = v*end.latitude + (1-v) * start.latitude;
-                                    lng = v*end.longitude + (1-v)*start.longitude;
-                                    LatLng newPos = new LatLng(lat,lng);
+                                    //v = value.getAnimatedFraction();
+                                    animationModel.setV(value.getAnimatedFraction());
+                                    //lat = v*end.latitude + (1-v) * start.latitude;
+                                    animationModel.setLat(animationModel.getV() * animationModel.getEnd().latitude +
+                                            (1-animationModel.getV())
+                                    * animationModel.getStart().latitude);
+                                    //lng = v*end.longitude + (1-v)*start.longitude;
+                                    animationModel.setLng(animationModel.getV() * animationModel.getEnd().longitude +
+                                            (1-animationModel.getV())
+                                                    * animationModel.getStart().longitude);
+                                    LatLng newPos = new LatLng(animationModel.getLat(),animationModel.getLng());
                                     currentMarker.setPosition(newPos);
                                     currentMarker.setAnchor(0.5f, 0.5f);
-                                    currentMarker.setRotation(Common.getBearing(start,newPos));
+                                    currentMarker.setRotation(Common.getBearing(animationModel.getStart(),newPos));
                                 });
 
                                 valueAnimator.start();
-                                if (index < polylineList.size() -  2) // Reach destination
-                                    handler.postDelayed(this,1500);
-                                else if (index < polylineList.size() - 1) // Done
+                                if (animationModel.getIndex() < animationModel.getPolylineList().size() -  2) // Reach destination
+                                    animationModel.getHandler().postDelayed(this,1500);
+                                else if (animationModel.getIndex() < animationModel.getPolylineList().size() - 1) // Done
                                 {
                                     animationModel.setRun(false);
                                     Common.driverLocationSubscribe.put(key,animationModel); // Update data
@@ -568,7 +575,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, IFireb
                     };
 
                     // Run Handler
-                    handler.postDelayed(runnable,1500);
+                    animationModel.getHandler().postDelayed(runnable,1500);
 
                 } catch (Exception e)
                 {

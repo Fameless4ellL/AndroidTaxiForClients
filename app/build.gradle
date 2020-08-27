@@ -10,7 +10,7 @@ android {
         minSdkVersion 22
         targetSdkVersion 29
         versionCode 1
-        versionName "1.0"
+        versionName "0.2.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -83,5 +83,14 @@ dependencies {
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.6.1'
     implementation 'com.squareup.retrofit2:converter-scalars:2.6.1'
     implementation 'com.squareup.retrofit2:converter-gson:2.6.1'
+
+    // Sliding Up
+    implementation 'com.sothree.slidinguppanel:library:3.3.1'
+
+    // Google Places
+    implementation 'com.google.android.libraries.places:places:2.3.0'
+
+    // AppUpdater
+    implementation 'com.github.javiersantos:AppUpdater:2.7'
 
 }

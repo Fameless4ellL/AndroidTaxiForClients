@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
+import android.widget.TextView;
 
 import androidx.core.app.NotificationCompat;
 
@@ -21,6 +22,7 @@ import com.google.android.gms.maps.model.Marker;
 
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -134,5 +136,15 @@ public class Common {
         else if (begin.latitude < end.latitude && begin.longitude >= end.longitude)
             return (float) ((90 - Math.toDegrees(Math.atan(lng / lat))) + 270);
         return -1;
+    }
+
+    public static void setWelcomeMessage(TextView txt_welcome) {
+        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        if (hour >= 1 && hour <= 12)
+            txt_welcome.setText(new StringBuilder("Good morning. "));
+        else if (hour >= 13 && hour <= 17)
+            txt_welcome.setText(new StringBuilder("Good afternoon. "));
+        else
+            txt_welcome.setText(new StringBuilder("Good evening. "));
     }
 }

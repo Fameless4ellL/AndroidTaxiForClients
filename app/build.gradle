@@ -93,4 +93,10 @@ dependencies {
     // AppUpdater
     implementation 'com.github.javiersantos:AppUpdater:2.7'
 
+    // EventBus
+    implementation 'org.greenrobot:eventbus:3.2.0'
+
+    // Maps Utils
+    implementation 'com.google.maps.android:android-maps-utils-v3:2.0.3'
+
 }

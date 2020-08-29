@@ -1,5 +1,6 @@
 package com.fameless.androiduberriderremake;
 
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
@@ -13,6 +14,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,11 +50,38 @@ import org.json.JSONObject;
 
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class RequestDriverActivity extends FragmentActivity implements OnMapReadyCallback {
+
+    TextView txt_origin;
+
+    //View
+    @BindView(R.id.confirm_uber_layout)
+    CardView confirm_uber_layout;
+    @BindView(R.id.btn_confirm_uber)
+    Button btn_confirm_uber;
+    @BindView(R.id.confirm_pickup_layout)
+    CardView confirm_pickup_layout;
+    @BindView(R.id.btn_confirm_pickup)
+    Button btn_confirm_pickup;
+    @BindView(R.id.txt_address_pickup)
+    TextView txt_address_pickup;
+
+    @OnClick(R.id.btn_confirm_uber)
+    void onConfirmUber(){
+        confirm_pickup_layout.setVisibility(View.VISIBLE);
+        confirm_uber_layout.setVisibility(View.GONE);
+
+        setDataPickup();
+    }
+
+
 
     private GoogleMap mMap;
 
@@ -66,6 +95,26 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
     private List<LatLng> polylineList;
 
     private Marker originMarker, destinationMarker;
+
+    private void setDataPickup() {
+        txt_address_pickup.setText(txt_origin != null ? txt_origin.getText() : "None");
+        mMap.clear();
+
+        addPickupMarker();
+    }
+
+    private void addPickupMarker() {
+        View view = getLayoutInflater().inflate(R.layout.pickup_info_window, null);
+        // Create Icon for Marker
+        IconGenerator generator = new IconGenerator(this);
+        generator.setContentView(view);
+        generator.setBackground(new ColorDrawable(Color.TRANSPARENT));
+        Bitmap icon = generator.makeIcon();
+
+        originMarker = mMap.addMarker(new MarkerOptions()
+                .icon(BitmapDescriptorFactory.fromBitmap(icon))
+                .position(selectPlaceEvent.getOrigin()));
+    }
 
     @Override
     protected void onStart() {
@@ -103,6 +152,7 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
     }
 
     private void init() {
+        ButterKnife.bind(this);
         iGoogleAPI = RetrofitClient.getInstance().create(IGoogleAPI.class);
     }
 
@@ -119,31 +169,8 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // copy past
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        mMap.setMyLocationEnabled(true);
-        mMap.getUiSettings().setMyLocationButtonEnabled(true);
-        mMap.setOnMyLocationButtonClickListener(() -> {
-
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(selectPlaceEvent.getOrigin(),18f));
-
-            return true;
-        });
-
         drawPath(selectPlaceEvent);
 
-        View locationButton = ((View) findViewById(Integer.parseInt("1")).getParent())
-                .findViewById(Integer.parseInt("2"));
-        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
-
-        params.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
-        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-        params.setMargins(0,0,0,250); // move view to
-
-        mMap.getUiSettings().setZoomControlsEnabled(true);
         try {
             boolean success = googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this,
                     R.raw.uber_maps_style));
@@ -264,7 +291,7 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
         View view = getLayoutInflater().inflate(R.layout.origin_info_window, null);
 
         TextView txt_time = (TextView)view.findViewById(R.id.txt_time);
-        TextView txt_origin = (TextView)view.findViewById(R.id.txt_origin);
+        txt_origin = (TextView)view.findViewById(R.id.txt_origin);
 
         txt_time.setText(Common.formatDuration(duration));
         txt_origin.setText(Common.formatAddress(start_address));

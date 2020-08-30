@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -20,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.fameless.androiduberriderremake.Common.Common;
+import com.fameless.androiduberriderremake.Model.DriverGeoModel;
 import com.fameless.androiduberriderremake.Model.EventBus.SelectPlaceEvent;
 import com.fameless.androiduberriderremake.Remote.IGoogleAPI;
 import com.fameless.androiduberriderremake.Remote.RetrofitClient;
@@ -77,6 +79,8 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
     private ValueAnimator lastPulseAnimator;
 
     //View
+    @BindView(R.id.main_layout)
+    RelativeLayout main_layout;
     @BindView(R.id.finding_your_ride_layout)
     CardView finding_your_ride_layout;
     @BindView(R.id.confirm_uber_layout)
@@ -150,7 +154,7 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
             }
         });
 
-        startMapCameraSpinningAnimation(mMap.getCameraPosition().target);
+        startMapCameraSpinningAnimation(origin);
 
     }
 
@@ -170,6 +174,47 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
             .build()));
         });
         animator.start();
+
+        // after animation, find driver
+        findNearbyDriver(target);
+    }
+
+    private void findNearbyDriver(LatLng target) {
+        if (Common.driversFound.size() > 0)
+        {
+            float min_distance = 0; // default distance
+            DriverGeoModel foundDriver = Common.driversFound.get(Common.driversFound.keySet().iterator().next());
+            Location currentRiderLocation = new Location("");
+            currentRiderLocation.setLatitude(target.latitude);
+            currentRiderLocation.setLongitude(target.longitude);
+            for (String key:Common.driversFound.keySet())
+            {
+                Location driverLocation = new Location("");
+                driverLocation.setLatitude(Common.driversFound.get(key).getGeoLocation().latitude);
+                driverLocation.setLongitude(Common.driversFound.get(key).getGeoLocation().longitude);
+
+                // compare 2 location
+                if (min_distance == 0)
+                {
+                    min_distance = driverLocation.distanceTo(currentRiderLocation); // First default min distance
+                    foundDriver = Common.driversFound.get(key);
+                }
+                else if (driverLocation.distanceTo(currentRiderLocation) < min_distance)
+                {
+                    // if have any driver smaller min_distance
+                    min_distance = driverLocation.distanceTo(currentRiderLocation);
+                    foundDriver = Common.driversFound.get(key);
+                }
+                Snackbar.make(main_layout, new StringBuilder("Found driver: ")
+                .append(foundDriver.getDriverInfoModel().getPhoneNumber()),
+                        Snackbar.LENGTH_LONG).show();
+            }
+        }
+        else
+        {
+            //Not found
+            Snackbar.make(main_layout,getString(R.string.drivers_not_found),Snackbar.LENGTH_SHORT).show();
+        }
     }
 
     @Override

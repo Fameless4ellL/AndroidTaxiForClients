@@ -28,6 +28,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -57,11 +60,25 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
+import static com.fameless.androiduberriderremake.Common.Common.valueAnimate;
+
 public class RequestDriverActivity extends FragmentActivity implements OnMapReadyCallback {
 
     TextView txt_origin;
 
+    //Slowly camera spinning
+    private ValueAnimator animator;
+    private static final int DESIRED_NUM_OF_SPINS = 5;
+    private static final int DESIRED_SECONDS_PER_ONE_FULL_360_SPIN=40;
+
+    //Effect
+    private Circle lastUserCircle;
+    private long duration = 1000;
+    private ValueAnimator lastPulseAnimator;
+
     //View
+    @BindView(R.id.finding_your_ride_layout)
+    CardView finding_your_ride_layout;
     @BindView(R.id.confirm_uber_layout)
     CardView confirm_uber_layout;
     @BindView(R.id.btn_confirm_uber)
@@ -73,6 +90,9 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
     @BindView(R.id.txt_address_pickup)
     TextView txt_address_pickup;
 
+    @BindView(R.id.fill_maps)
+    View fill_maps;
+
     @OnClick(R.id.btn_confirm_uber)
     void onConfirmUber(){
         confirm_pickup_layout.setVisibility(View.VISIBLE);
@@ -81,7 +101,82 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
         setDataPickup();
     }
 
+    @OnClick(R.id.btn_confirm_pickup)
+    void onConfirmPickup(){
+        if (mMap == null) return;
+        if (selectPlaceEvent == null) return;
 
+        // clear map
+        mMap.clear();
+        //Tilt
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(selectPlaceEvent.getOrigin())
+                .tilt(45f)
+                .zoom(16f)
+                .build();
+        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+        //Start animation
+        addMarkerWithPulseAnimation();
+    }
+
+    private void addMarkerWithPulseAnimation() {
+        confirm_pickup_layout.setVisibility(View.GONE);
+        fill_maps.setVisibility(View.VISIBLE);
+        finding_your_ride_layout.setVisibility(View.VISIBLE);
+
+        originMarker = mMap.addMarker(new MarkerOptions()
+        .icon(BitmapDescriptorFactory.defaultMarker())
+        .position(selectPlaceEvent.getOrigin()));
+
+        addPulsatingEffect(selectPlaceEvent.getOrigin());
+
+
+    }
+
+    private void addPulsatingEffect(LatLng origin) {
+        if (lastPulseAnimator != null) lastPulseAnimator.cancel();
+        if (lastUserCircle != null) lastUserCircle.setCenter(origin);
+
+        lastPulseAnimator = valueAnimate(duration,animation -> {
+            if (lastUserCircle != null)lastUserCircle.setRadius((Float)animation.getAnimatedValue());
+            else {
+                lastUserCircle = mMap.addCircle(new CircleOptions()
+                .center(origin)
+                .radius((Float)animation.getAnimatedValue())
+                .strokeColor(Color.WHITE)
+                .fillColor(Color.parseColor("#33333333"))
+                );
+            }
+        });
+
+        startMapCameraSpinningAnimation(mMap.getCameraPosition().target);
+
+    }
+
+    private void startMapCameraSpinningAnimation(LatLng target) {
+        if (animator != null) animator.cancel();
+        animator = ValueAnimator.ofFloat(0,DESIRED_NUM_OF_SPINS*360);
+        animator.setDuration(DESIRED_SECONDS_PER_ONE_FULL_360_SPIN*DESIRED_NUM_OF_SPINS*1000);
+        animator.setInterpolator(new LinearInterpolator());
+        animator.setStartDelay(100);
+        animator.addUpdateListener(valueAnimator ->{
+            Float newBearingValue = (Float) valueAnimator.getAnimatedValue();
+            mMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
+            .target(target)
+            .zoom(16f)
+            .tilt(45f)
+            .bearing(newBearingValue)
+            .build()));
+        });
+        animator.start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (animator != null) animator.end();
+        super.onDestroy();
+    }
 
     private GoogleMap mMap;
 

@@ -35,6 +35,8 @@ public class Common {
     public static final String TOKEN_REFERENCE = "Token";
     public static final String DRIVERS_LOCATION_REFERENCES = "DriversLocation"; // Same as driver app
     public static final String DRIVERS_INFO_REFERENCE = "DriverInfo";
+    public static final String REQUEST_DRIVER_TITLE = "RequestDriver";
+    public static final String RIDER_PICKUP_LOCATION = "PickupLocation";
     public static RiderModel currentRider;
 
     public static final String NOTI_TITLE = "title";

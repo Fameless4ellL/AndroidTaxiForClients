@@ -25,6 +25,7 @@ import com.fameless.androiduberriderremake.Model.DriverGeoModel;
 import com.fameless.androiduberriderremake.Model.EventBus.SelectPlaceEvent;
 import com.fameless.androiduberriderremake.Remote.IGoogleAPI;
 import com.fameless.androiduberriderremake.Remote.RetrofitClient;
+import com.fameless.androiduberriderremake.Utils.UserUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -205,9 +206,11 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
                     min_distance = driverLocation.distanceTo(currentRiderLocation);
                     foundDriver = Common.driversFound.get(key);
                 }
-                Snackbar.make(main_layout, new StringBuilder("Found driver: ")
-                .append(foundDriver.getDriverInfoModel().getPhoneNumber()),
-                        Snackbar.LENGTH_LONG).show();
+//                Snackbar.make(main_layout, new StringBuilder("Found driver: ")
+//                .append(foundDriver.getDriverInfoModel().getPhoneNumber()),
+//                        Snackbar.LENGTH_LONG).show();
+
+                UserUtils.sendRequestToDriver(this,main_layout,foundDriver, target);
             }
         }
         else
